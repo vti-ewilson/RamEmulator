@@ -19,6 +19,8 @@ namespace RamEmulator
 		System.Threading.Thread comThread;
 		bool disconnectClicked = false;
 		int counts = 0;
+		Mutex mutex = new Mutex();
+		string Response;
 
 		public RamEmulatorForm()
 		{
@@ -38,6 +40,28 @@ namespace RamEmulator
 		{
 			populateComPortMenu();
 			timer1.Enabled = true;
+
+			// Generate random values for each byte
+			byte statusByte = 0xf0;
+			byte alarms = 0xff;
+			byte inputs = 0xff;
+			byte outputs = 0x10;
+			byte end = 0xdd;
+
+			// Construct response string (ensuring proper hex format with leading zeros)
+			Response = "RESP" +
+				statusByte.ToString("X2") +
+				alarms.ToString("X2") +
+				inputs.ToString("X2") +
+				outputs.ToString("X2") +
+				end.ToString("X2") +
+				end.ToString("X2") +
+				end.ToString("X2") +
+				end.ToString("X2");
+
+			mutex.WaitOne();
+			textBox1.Text = Response;
+			mutex.ReleaseMutex();
 		}
 
 		private string GetDropdownValue()
@@ -80,25 +104,7 @@ namespace RamEmulator
 			byte[] buffer;
 			string recd, msg;
 
-			Random rand = new Random();
-
-			// Generate random values for each byte
-			byte statusByte = 0xf0;
-			byte alarms = 0xff;
-			byte inputs = 0xff;
-			byte outputs = 0xff;
-
-			// Construct response string (ensuring proper hex format with leading zeros)
-			string response = "RESP" +
-				statusByte.ToString("X2") +
-				alarms.ToString("X2") +
-				inputs.ToString("X2") +
-				outputs.ToString("X2") +
-				outputs.ToString("X2") +
-				outputs.ToString("X2") +
-				outputs.ToString("X2") +
-				outputs.ToString("X2");
-
+			
 			while(!disconnectClicked)
 			{
 				int count = port.BytesToRead;
@@ -108,9 +114,11 @@ namespace RamEmulator
 					var str = port.Read(buffer, 0, count);
 					recd = Encoding.Default.GetString(buffer);
 					Console.WriteLine(recd);
-					
-					port.WriteLine(response);
-					Console.WriteLine(response);
+
+					mutex.WaitOne();
+					port.WriteLine(Response);
+					Console.WriteLine(Response);
+					mutex.ReleaseMutex();
 				}
 				else
 				{
@@ -123,7 +131,6 @@ namespace RamEmulator
 
 		private void timer1_Tick(object sender, EventArgs e)
 		{
-			countLabel.Text = counts.ToString() + " counts";
 		}
 
 		private void connectButton_Click(object sender, EventArgs e)
@@ -138,6 +145,13 @@ namespace RamEmulator
 		{
 			SetButtonStates(false);
 			disconnectClicked = true;
+		}
+
+		private void button1_Click(object sender, EventArgs e)
+		{
+			mutex.WaitOne();
+			Response = textBox1.Text;
+			mutex.ReleaseMutex();
 		}
 	}
 }
