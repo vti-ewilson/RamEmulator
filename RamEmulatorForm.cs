@@ -103,7 +103,7 @@ namespace RamEmulator
 			port.Open();
 			byte[] buffer;
 			string recd, msg;
-
+			int position = 0;
 			
 			while(!disconnectClicked)
 			{
@@ -116,13 +116,29 @@ namespace RamEmulator
 					Console.WriteLine(recd);
 
 					mutex.WaitOne();
-					port.WriteLine(Response);
-					Console.WriteLine(Response);
+					if(recd.StartsWith(":010305")) // alarm codes
+					{
+						string alarms = "01030C0000FFFF000000E82AD1D07B24";
+						port.WriteLine(alarms + "\r\n");
+					}
+					else if(recd.StartsWith(":01039000")) //getting position
+					{
+						string resp = "010314" + position.ToString("X8") +  "0000B80162002000800031C7000800111C";
+						port.WriteLine(resp + "\r\n");
+					}
+					else if(recd.StartsWith(":01109900000204")) // setting position
+					{
+						position = Int32.Parse(recd.Substring(15, 8), System.Globalization.NumberStyles.HexNumber);
+					}
+					else
+					{
+						port.WriteLine(recd + "\r\n");
+					}
 					mutex.ReleaseMutex();
 				}
 				else
 				{
-					Thread.Sleep(50);
+					Thread.Sleep(10);
 				}
 			}
 			disconnectClicked = false;
