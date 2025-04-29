@@ -4,7 +4,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{F0D3519D-7351-4ED4-8416-8602958EAE8C}</ProjectGuid>
+    <ProjectGuid>{B5BCC39E-C9BB-4803-BF65-3AF36F0F1729}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <RootNamespace>RamEmulator</RootNamespace>
     <AssemblyName>RamEmulator</AssemblyName>

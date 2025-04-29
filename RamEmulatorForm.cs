@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.Globalization;
 using System.IO.Ports;
 using System.Linq;
 using System.Text;
@@ -116,19 +117,40 @@ namespace RamEmulator
 					Console.WriteLine(recd);
 
 					mutex.WaitOne();
-					if(recd.StartsWith(":010305")) // alarm codes
+					if(recd.StartsWith(":0103")) // read register
 					{
-						string alarms = "01030C0000FFFF000000E82AD1D07B24";
-						port.WriteLine(alarms + "\r\n");
-					}
-					else if(recd.StartsWith(":01039000")) //getting position
-					{
-						string resp = "010314" + position.ToString("X8") +  "0000B80162002000800031C7000800111C";
-						port.WriteLine(resp + "\r\n");
+						int address = 0;
+						if(Int32.TryParse(recd.Substring(5, 4), NumberStyles.HexNumber, CultureInfo.CurrentCulture, out address))
+						{
+							if(address >= 0x1000 && address <= 0x3FFF)
+							{
+								string resp = "01030C000007D000001F4000003A98E8000000000000000000000000000000000000";
+								port.WriteLine(resp + "\r\n");
+							}
+							else if(address == 0x0500) // alarm codes
+							{
+								string alarms = "01030C0000FFFF000000E82AD1D07B24";
+								port.WriteLine(alarms + "\r\n");
+							}
+							else if(address == 0x9000) //getting position
+							{
+								string resp = "010314" + position.ToString("X8") + "0000B80162002000800031C7000800111C";
+								port.WriteLine(resp + "\r\n");
+							}
+							else if(address == 0x9005)
+							{
+								port.WriteLine("01039000080FFFF000000E\r\n");
+							}
+							else
+							{
+								port.WriteLine(recd + "\r\n");
+							}
+						}
 					}
 					else if(recd.StartsWith(":01109900000204")) // setting position
 					{
-						position = Int32.Parse(recd.Substring(15, 8), System.Globalization.NumberStyles.HexNumber);
+						position = Int32.Parse(recd.Substring(15, 8), NumberStyles.HexNumber);
+						port.WriteLine(recd + "\r\n");
 					}
 					else
 					{
