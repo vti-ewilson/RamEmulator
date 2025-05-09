@@ -124,22 +124,22 @@ namespace RamEmulator
 						{
 							if(address >= 0x1000 && address <= 0x3FFF)
 							{
-								string resp = "01030C000007D000001F4000003A98E8000000000000000000000000000000000000";
+								string resp = ":01030C000007D000001F4000003A98E8000000000000000000000000000000000000";
 								port.WriteLine(resp + "\r\n");
 							}
 							else if(address == 0x0500) // alarm codes
 							{
-								string alarms = "01030C0000FFFF000000E82AD1D07B24";
+								string alarms = ":01030C0000FFFF000000E82AD1D07B24";
 								port.WriteLine(alarms + "\r\n");
 							}
 							else if(address == 0x9000) //getting position
 							{
-								string resp = "010314" + position.ToString("X8") + "0000B80162002000800031C7000800111C";
+								string resp = ":010314" + position.ToString("X8") + "0000B80162002000800031C7000800111C";
 								port.WriteLine(resp + "\r\n");
 							}
 							else if(address == 0x9005)
 							{
-								port.WriteLine("01039000080FFFF000000E\r\n");
+								port.WriteLine(":010302308842\r\n");
 							}
 							else
 							{
